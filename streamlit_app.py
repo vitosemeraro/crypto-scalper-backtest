@@ -2,12 +2,12 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
-st.title("📈 Crypto Scalper Backtest – BTC & ETH (5m)")
+st.title("📈 Crypto Scalper Backtest – BTC & ETH (1m, USDT)")
 
 @st.cache_data
 def load_data():
-    btc = pd.read_csv("BTC_USDC_5m.csv", parse_dates=["timestamp"])
-    eth = pd.read_csv("ETH_USDC_5m.csv", parse_dates=["timestamp"])
+    btc = pd.read_csv("BTC_USDT_1m.csv", parse_dates=["timestamp"])
+    eth = pd.read_csv("ETH_USDT_1m.csv", parse_dates=["timestamp"])
     return btc, eth
 
 def compute_rsi(series, period=6):
@@ -54,10 +54,10 @@ def backtest(df):
 
 btc_df, eth_df = load_data()
 
-tab1, tab2 = st.tabs(["BTC/USDC", "ETH/USDC"])
+tab1, tab2 = st.tabs(["BTC/USDT", "ETH/USDT"])
 
 with tab1:
-    st.subheader("Backtest BTC/USDC")
+    st.subheader("Backtest BTC/USDT (1m)")
     btc_results = backtest(btc_df)
     st.write(btc_results)
     st.metric("TP %", f"{(btc_results['Exit Type'] == 'TP').mean() * 100:.1f}%")
@@ -65,7 +65,7 @@ with tab1:
     st.metric("Expired %", f"{(btc_results['Exit Type'] == 'EXP').mean() * 100:.1f}%")
 
 with tab2:
-    st.subheader("Backtest ETH/USDC")
+    st.subheader("Backtest ETH/USDT (1m)")
     eth_results = backtest(eth_df)
     st.write(eth_results)
     st.metric("TP %", f"{(eth_results['Exit Type'] == 'TP').mean() * 100:.1f}%")
