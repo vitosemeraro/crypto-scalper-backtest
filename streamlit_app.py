@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
-st.title("📈 Crypto Scalper Backtest – BTC & ETH (1m, USDT)")
+st.title("📈 Crypto Scalper Backtest – BTC & ETH (1m, TP 2%, durata 45m)")
 
 @st.cache_data
 def load_data():
@@ -28,7 +28,7 @@ def backtest(df):
     )
 
     entries = []
-    for i in range(100, len(df) - 20):
+    for i in range(100, len(df) - 45):
         entry_conditions = [
             df.loc[i, "rsi6"] > 30 and df["rsi6"].iloc[i - 5:i].min() < 30,
             df.loc[i, "green_full"],
@@ -37,9 +37,9 @@ def backtest(df):
         ]
         if sum(entry_conditions) >= 3:
             entry_price = df.loc[i, "close"]
-            take_profit = entry_price * 1.05
-            stop_loss = entry_price * 0.98
-            for j in range(i + 1, min(i + 20, len(df))):
+            take_profit = entry_price * 1.02  # TP a +2%
+            stop_loss = entry_price * 0.98    # SL a -2%
+            for j in range(i + 1, min(i + 45, len(df))):
                 price = df.loc[j, "close"]
                 if price >= take_profit:
                     entries.append((df.loc[i, "timestamp"], "TP", entry_price, price))
@@ -48,7 +48,7 @@ def backtest(df):
                     entries.append((df.loc[i, "timestamp"], "SL", entry_price, price))
                     break
             else:
-                entries.append((df.loc[i, "timestamp"], "EXP", entry_price, df.loc[i + 20, "close"]))
+                entries.append((df.loc[i, "timestamp"], "EXP", entry_price, df.loc[i + 45, "close"]))
 
     return pd.DataFrame(entries, columns=["Entry Time", "Exit Type", "Entry Price", "Exit Price"])
 
