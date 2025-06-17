@@ -73,7 +73,7 @@ def backtest(df, tp_pct, sl_pct, max_candles, min_entry_flags, capital, risk_pct
 st.sidebar.header("🔧 Parametri Strategia")
 tp_pct = st.sidebar.slider("Take Profit (%)", 0.5, 5.0, 1.5, step=0.1)
 sl_pct = st.sidebar.slider("Stop Loss (%)", 0.5, 5.0, 2.0, step=0.1)
-max_candles = st.sidebar.slider("Durata max trade (minuti)", 10, 240, 60, step=5)
+max_candles = st.sidebar.slider("Durata max trade (minuti)", 10, 480, 60, step=5)
 min_entry_flags = st.sidebar.slider("Filtri tecnici minimi per ingresso", 1, 4, 3)
 
 st.sidebar.header("💰 Parametri Capitale")
