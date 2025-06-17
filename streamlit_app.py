@@ -31,8 +31,14 @@ def backtest(df, tp_pct, sl_pct, max_candles, min_entry_flags, capital, risk_pct
     entries = []
     equity = [capital]
     current_equity = capital
+    active_trades = []  # (exit_index, amount_locked)
 
     for i in range(100, len(df) - max_candles):
+        # libera equity da trade chiusi
+        active_trades = [(exit_idx, amt) for (exit_idx, amt) in active_trades if exit_idx > i]
+        equity_locked = sum([amt for (_, amt) in active_trades])
+        available_equity = current_equity - equity_locked
+
         entry_conditions = [
             df.loc[i, "rsi6"] > 30 and df["rsi6"].iloc[i - 5:i].min() < 30,
             df.loc[i, "green_full"],
@@ -43,9 +49,13 @@ def backtest(df, tp_pct, sl_pct, max_candles, min_entry_flags, capital, risk_pct
             entry_price = df.loc[i, "close"]
             tp = entry_price * (1 + tp_pct / 100)
             sl = entry_price * (1 - sl_pct / 100)
-            risk_amount = current_equity * (risk_pct / 100)
-            position_size = risk_amount / abs(entry_price - sl)
+            risk_amount = available_equity * (risk_pct / 100)
 
+            # se non c'è abbastanza equity → salta
+            if risk_amount < 1:
+                continue
+
+            position_size = risk_amount / abs(entry_price - sl)
             exit_type = "EXP"
             exit_price = df.loc[i + max_candles, "close"]
 
@@ -63,6 +73,9 @@ def backtest(df, tp_pct, sl_pct, max_candles, min_entry_flags, capital, risk_pct
             pnl = (exit_price - entry_price) * position_size if exit_type != "SL" else -risk_amount
             current_equity += pnl
             equity.append(current_equity)
+
+            # blocca equity fino alla chiusura
+            active_trades.append((j if exit_type != "EXP" else i + max_candles, risk_amount))
 
             entries.append((df.loc[i, "timestamp"], exit_type, entry_price, exit_price, pnl, current_equity))
 
